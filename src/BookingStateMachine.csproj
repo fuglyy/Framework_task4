@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>BookingStateMachine</RootNamespace>
+    <AssemblyName>BookingStateMachine</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- OpenTelemetry metrics + tracing -->
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting"         Version="1.9.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore"  Version="1.9.0" />
+    <PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore"  Version="1.10.0-beta.1" />
+    <!-- Structured logging -->
+    <PackageReference Include="Serilog.AspNetCore"                        Version="8.0.3" />
+    <PackageReference Include="Serilog.Sinks.Console"                     Version="6.0.0" />
+    <!-- Health checks UI (optional, lightweight) -->
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="9.0.0" />
+    <!-- OpenAPI / Swagger UI -->
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
+  </ItemGroup>
+
+</Project>

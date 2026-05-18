@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "00JMcy5HTlNLRhDAvFJS5J0EOHTubsWJ1sszQtn4Qbg=",
+  "Source": "BookingStateMachine",
+  "BasePath": "_content/BookingStateMachine",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}

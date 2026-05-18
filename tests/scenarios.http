@@ -1,0 +1,192 @@
+### Booking State Machine — Manual Test Scenarios
+### Requires VS Code REST Client extension or JetBrains HTTP Client
+### Base URL: https://localhost:5001
+
+@base = https://localhost:5001
+@processKey = booking-demo-001
+@corr = {{$guid}}
+
+### ── Scenario 1: Happy path ──────────────────────────────────────────────────
+
+# Step 0 — Create process
+POST {{base}}/api/bookings
+Content-Type: application/json
+
+{
+  "processKey": "{{processKey}}",
+  "correlationId": "corr-001"
+}
+
+###
+
+# Step 1 — Reserve room
+POST {{base}}/api/bookings/{{processKey}}/transitions
+Content-Type: application/json
+
+{
+  "processKey": "{{processKey}}",
+  "event": "ReserveRoom",
+  "idempotencyKey": "ikey-001",
+  "correlationId": "corr-001",
+  "simulateFailure": false
+}
+
+###
+
+# Step 2 — Send notification
+POST {{base}}/api/bookings/{{processKey}}/transitions
+Content-Type: application/json
+
+{
+  "processKey": "{{processKey}}",
+  "event": "SendNotification",
+  "idempotencyKey": "ikey-002",
+  "correlationId": "corr-001",
+  "simulateFailure": false
+}
+
+###
+
+# Step 3 — Confirm
+POST {{base}}/api/bookings/{{processKey}}/transitions
+Content-Type: application/json
+
+{
+  "processKey": "{{processKey}}",
+  "event": "Confirm",
+  "idempotencyKey": "ikey-003",
+  "correlationId": "corr-001",
+  "simulateFailure": false
+}
+
+###
+
+# Check state
+GET {{base}}/api/bookings/{{processKey}}
+
+###
+
+### ── Scenario 2: Idempotency — send same key twice ──────────────────────────
+
+POST {{base}}/api/bookings
+Content-Type: application/json
+
+{
+  "processKey": "booking-idem-001",
+  "correlationId": "corr-idem"
+}
+
+###
+
+POST {{base}}/api/bookings/booking-idem-001/transitions
+Content-Type: application/json
+
+{
+  "processKey": "booking-idem-001",
+  "event": "ReserveRoom",
+  "idempotencyKey": "FIXED-KEY-XYZ",
+  "correlationId": "corr-idem",
+  "simulateFailure": false
+}
+
+###
+
+# Send SAME idempotency key again — state must NOT change
+POST {{base}}/api/bookings/booking-idem-001/transitions
+Content-Type: application/json
+
+{
+  "processKey": "booking-idem-001",
+  "event": "ReserveRoom",
+  "idempotencyKey": "FIXED-KEY-XYZ",
+  "correlationId": "corr-idem",
+  "simulateFailure": false
+}
+
+###
+
+### ── Scenario 3: Compensation — fail on SendNotification ────────────────────
+
+POST {{base}}/api/bookings
+Content-Type: application/json
+
+{
+  "processKey": "booking-comp-001",
+  "correlationId": "corr-comp"
+}
+
+###
+
+POST {{base}}/api/bookings/booking-comp-001/transitions
+Content-Type: application/json
+
+{
+  "processKey": "booking-comp-001",
+  "event": "ReserveRoom",
+  "idempotencyKey": "comp-ikey-001",
+  "correlationId": "corr-comp",
+  "simulateFailure": false
+}
+
+###
+
+# This step will fail → compensation runs automatically
+POST {{base}}/api/bookings/booking-comp-001/transitions
+Content-Type: application/json
+
+{
+  "processKey": "booking-comp-001",
+  "event": "SendNotification",
+  "idempotencyKey": "comp-ikey-002",
+  "correlationId": "corr-comp",
+  "simulateFailure": true
+}
+
+###
+
+# Check — state should be Cancelled
+GET {{base}}/api/bookings/booking-comp-001
+
+###
+
+### ── Scenario 4: Invalid transition (out of order) ─────────────────────────
+
+POST {{base}}/api/bookings
+Content-Type: application/json
+
+{
+  "processKey": "booking-invalid-001",
+  "correlationId": "corr-inv"
+}
+
+###
+
+# Try to Confirm directly from Created → expect 422
+POST {{base}}/api/bookings/booking-invalid-001/transitions
+Content-Type: application/json
+
+{
+  "processKey": "booking-invalid-001",
+  "event": "Confirm",
+  "idempotencyKey": "inv-ikey-001",
+  "correlationId": "corr-inv",
+  "simulateFailure": false
+}
+
+###
+
+### ── Health & Metrics ────────────────────────────────────────────────────────
+
+GET {{base}}/health/live
+
+###
+
+GET {{base}}/health/ready
+
+###
+
+GET {{base}}/metrics
+
+###
+
+GET {{base}}/api/bookings
